@@ -10,9 +10,10 @@ XML yick
 
 docker-compose up -d
 
-Yours might show up at
+Remember, you are really running the service on a Tomcat instance, so it will want the path 
+to be complete with the service name, for example, yours might show up at
 https://localhost:8080/geowebcache
-
-Mine might show up at
+and mine might show up at
 https://geowebcache.wildsong.biz/geowebcache
 
+I can see traffic on port 443 from my browser.

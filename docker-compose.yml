@@ -2,8 +2,8 @@ version: '3.7'
 
 volumes:
   # Shared with your geoserver, if you ave one!
-  geoserver_data:
-    name: geoserver_data
+  geowebcache_data:
+    name: geowebcache_data
 
 networks:
   # This is a network we share with our reverse proxy
@@ -15,19 +15,20 @@ networks:
 services:
   geowebcache:
     container_name: geowebcache
-    image: wildsong/geoserver:2.21.1
+    image: wildsong/geowebcache:latest
     environment:
       ENABLE_JSONP: "true"
-      GEOWEBCACHE_DATA_DIR: /geoserver/gwc
+      GEOWEBCACHE_DATA_DIR: /geowebcache
     networks:
       - proxy
     expose:
       - "8080"
+    ports:
+      - "8080:8080"
     volumes:
-      - geoserver_data:/geoserver
+      - geowebcache_data:/geowebcache
     labels:
-      # Yes, I am using the wrong name, it's a long story.
-      caddy: geoserver.${DOMAIN}
+      caddy: geowebcache.${DOMAIN}
       caddy.reverse_proxy: "{{upstreams 8080}}"
       caddy.tls.protocols: "tls1.3"
       caddy.tls.dns: "cloudflare ${CLOUDFLARE_API_TOKEN}"
