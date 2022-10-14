@@ -1,35 +1,53 @@
 version: '3.7'
 
 volumes:
-  # Shared with your geoserver, if you ave one!
-  geowebcache_data:
-    name: geowebcache_data
+  # Shared with your geoserver, if you have one!
+  geoserver_data:
+    name: geoserver_data
+  blobstore:
+    name: geowebcache_blobstore
 
 networks:
   # This is a network we share with our reverse proxy
   proxy:
-    name: proxy
+    name: caddy
     # Won't be created or destroyed with docker-compose up|down
     external: true
 
 services:
   geowebcache:
     container_name: geowebcache
-    image: wildsong/geowebcache:latest
+    image: geowebcache
+    build:
+      dockerfile: Dockerfile.tomcat
+      context: .
+      args:
+        GEOWEBCACHE_VERSION: 1.21.1
+        GEOSERVER_DATA_DIR: /geoserver
+        GEOWEBCACHE_CACHE_DIR: /geoserver/gwc
     environment:
       ENABLE_JSONP: "true"
-      GEOWEBCACHE_DATA_DIR: /geowebcache
     networks:
-      - proxy
+      proxy:
+        aliases:
+          - geowebcache
     expose:
       - "8080"
     ports:
       - "8080:8080"
     volumes:
-      - geowebcache_data:/geowebcache
+      - geoserver_data:/geoserver
+      - blobstore:/tmp/defaultCache
+      # Load our custom configuration on top of the standard one
+      - ./geowebcache.xml:/geoserver/gwc/geowebcache.xml:ro
     labels:
       caddy: geowebcache.${DOMAIN}
       caddy.reverse_proxy: "{{upstreams 8080}}"
       caddy.tls.protocols: "tls1.3"
       caddy.tls.dns: "cloudflare ${CLOUDFLARE_API_TOKEN}"
     restart: unless-stopped
+
+  edit:
+    container_name: gwc_editor
+    image: debian:latest
+    
