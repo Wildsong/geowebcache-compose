@@ -4,8 +4,6 @@ volumes:
   # Shared with your geoserver, if you have one!
   geoserver_data:
     name: geoserver_data
-  blobstore:
-    name: geowebcache_blobstore
 
 networks:
   # This is a network we share with our reverse proxy
@@ -37,7 +35,6 @@ services:
       - "8080:8080"
     volumes:
       - geoserver_data:/geoserver
-      - blobstore:/tmp/defaultCache
       # Load our custom configuration on top of the standard one
       - ./geowebcache.xml:/geoserver/gwc/geowebcache.xml:ro
     labels:
@@ -47,7 +44,3 @@ services:
       caddy.tls.dns: "cloudflare ${CLOUDFLARE_API_TOKEN}"
     restart: unless-stopped
 
-  edit:
-    container_name: gwc_editor
-    image: debian:latest
-    
